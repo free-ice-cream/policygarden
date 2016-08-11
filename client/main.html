@@ -1,0 +1,44 @@
+<head>
+  <title>Policy Garden</title>
+</head>
+
+<body>
+  <h1>Policy Garden</h1>
+  {{#if simulationRunning}}
+    <button class="simulation-toggle">simulation stop</button>
+  {{else}}
+    <button class="simulation-toggle">simulation start</button>
+    <button class="simulation-step">simulation step</button>
+  {{/if}}
+  
+  <div class="nodes">
+    {{#each nodes}}
+      {{> node}}
+    {{/each}}
+  </div>
+  <button class="create-node">create node</button>
+</body>
+
+<template name="node">
+  <div class="node">
+    <input name="title" value="{{title}}" placeholder="add a title">
+    <input name="description" value={{description}} placeholder="add a description">
+    <div class="data">
+      <label>current level</label><input name="level" class="number" value="{{level}}">
+      <label>overflow</label><input name="overflow" class="number" value="{{overflow}}">
+      <label>threshold</label><input name="threshold" class="number" value="{{threshold}}">
+      <label>decay</label><input name="decay" class="number" value="{{decay}}">
+    </div>
+    <div class="connections data">
+      <h4>connections</h4>
+      {{#each connections}}
+        {{> connection}}
+      {{/each}}
+    </div>
+    <button class="delete-node">delete node</button>
+  </div>
+</template>
+
+<template name="connection">
+  <label>{{targetTitle}}</label><input name="bandwidth" value="{{bandwidth}}">
+</template>
