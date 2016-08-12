@@ -98,6 +98,11 @@ Meteor.methods({
     var threshold = 0
     var overflow = 0
     
+    if(type == "player") {
+      decay = -1
+      overflow = 10
+    }
+    
     // create the node    
     var newNodeId = Nodes.insert({
       title: title,

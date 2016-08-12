@@ -62,17 +62,30 @@ Template.node.helpers({
   policy() {
     return this.type == "policy"
   },
+  player() {
+    return this.type == "player"
+  },
+  replenish() {
+    return -this.decay
+  },
   connections() {
     return NodeConnections.find({source: this._id})
+  },
+  showConnections() {
+    return NodeConnections.find({source: this._id}).count() > 0
   }
 })
 
 Template.node.events({
   "input input"(event) {
-    if($(event.target).hasClass("number")) {
-      this[event.target.name] = Number(event.target.value) // convert input to number
+    if(event.target.name == "replenish") {
+      this[decay] = -event.target.value // call negative decay "replenish" for player nodes
     } else {
-      this[event.target.name] = event.target.value
+      if($(event.target).hasClass("number")) {
+        this[event.target.name] = Number(event.target.value) // convert input to number
+      } else {
+        this[event.target.name] = event.target.value
+      }      
     }
     Nodes.update(this._id, this)
   },

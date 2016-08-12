@@ -49,17 +49,21 @@
     <input name="title" value="{{title}}" placeholder="add a title">
     <input name="description" value={{description}} placeholder="add a description">
     <div class="data">
-      <label>current level</label><input name="level" class="number" value="{{level}}">
-      <label>overflow</label><input name="overflow" class="number" value="{{overflow}}">
+      <label>overflow level</label><input name="overflow" class="number" value="{{overflow}}">
       {{#if policy}}
-        <label>threshold</label><input name="threshold" class="number" value="{{threshold}}">
+      <label>current level</label><input name="level" class="number" value="{{level}}">
+        <label>minimum level</label><input name="threshold" class="number" value="{{threshold}}">
       {{/if}}
-      <label>decay</label><input name="decay" class="number" value="{{decay}}">
+      {{#if player}}
+        <label>replenishment</label><input name="replenish" class="number" value="{{replenish}}">
+      {{else}}
+        <label>leak</label><input name="decay" class="number" value="{{decay}}">
+      {{/if}}
     </div>
     <div class="connections data">
-      {{#unless goal}}
-        <h4>water</h4>
-      {{/unless}}
+      {{#if showConnections}}
+        <h4>water flows to</h4>
+      {{/if}}
       {{#each connections}}
         {{> connection}}
       {{/each}}
