@@ -4,13 +4,27 @@ import { ReactiveVar } from 'meteor/reactive-var';
 import './main.html';
 
 Template.body.helpers({
-  nodes() {
-    return Nodes.find()
+  goals() {
+    return Nodes.find({type: "goal"})
+  },
+  policies() {
+    return Nodes.find({type: "policy"})
+  },
+  players() {
+    return Nodes.find({type: "player"})
   },
   simulationRunning() {
     var state = SimulationState.findOne()
     if(state) {
       return state.running
+    } else {
+      return false
+    }
+  },
+  simulationSpeed() {
+    var state = SimulationState.findOne()
+    if(state) {
+      return state.speed
     } else {
       return false
     }
@@ -24,12 +38,30 @@ Template.body.events({
   "click .simulation-step"(event) {
     Meteor.call("simulation.step")
   },
-  "click .create-node"(event) {    
-    Meteor.call("nodes.create")
+  "input .simulation-speed"(event) {
+    var state = SimulationState.findOne()
+    if(state) {
+      SimulationState.update(state._id, {$set: {speed:Number(event.target.value)}})
+    } 
+  },
+  "click .create-goal"(event) {    
+    Meteor.call("nodes.create", "goal")
+  },
+  "click .create-policy"(event) {    
+    Meteor.call("nodes.create", "policy")
+  },
+  "click .create-player"(event) {    
+    Meteor.call("nodes.create", "player")
   }
 })
 
 Template.node.helpers({
+  goal() {
+    return this.type == "goal"
+  },
+  policy() {
+    return this.type == "policy"
+  },
   connections() {
     return NodeConnections.find({source: this._id})
   }
