@@ -7,16 +7,41 @@
   {{#if simulationRunning}}
     <button class="simulation-toggle">simulation stop</button>
   {{else}}
+    <label>speed</label> <input class="simulation-speed" value="{{simulationSpeed}}">
     <button class="simulation-toggle">simulation start</button>
     <button class="simulation-step">simulation step</button>
   {{/if}}
   
-  <div class="nodes">
-    {{#each nodes}}
-      {{> node}}
-    {{/each}}
-  </div>
-  <button class="create-node">create node</button>
+  <section class="goals">
+    <h2>Goals</h2>
+    <div class="nodes">
+      {{#each goals}}
+        {{> node}}
+      {{/each}}
+    </div>
+    <button class="create-goal">create goal</button>
+  </section>
+
+  <section class="policies">
+    <h2>Policies</h2>
+    <div class="nodes">
+      {{#each policies}}
+        {{> node}}
+      {{/each}}
+    </div>
+    <button class="create-policy">create policy</button>
+  </section>
+
+  <section class="players">
+    <h2>Players</h2>
+    <div class="nodes">
+      {{#each players}}
+        {{> node}}
+      {{/each}}
+    </div>
+    <button class="create-player">create player</button>
+  </section>
+
 </body>
 
 <template name="node">
@@ -26,16 +51,20 @@
     <div class="data">
       <label>current level</label><input name="level" class="number" value="{{level}}">
       <label>overflow</label><input name="overflow" class="number" value="{{overflow}}">
-      <label>threshold</label><input name="threshold" class="number" value="{{threshold}}">
+      {{#if policy}}
+        <label>threshold</label><input name="threshold" class="number" value="{{threshold}}">
+      {{/if}}
       <label>decay</label><input name="decay" class="number" value="{{decay}}">
     </div>
     <div class="connections data">
-      <h4>connections</h4>
+      {{#unless goal}}
+        <h4>water</h4>
+      {{/unless}}
       {{#each connections}}
         {{> connection}}
       {{/each}}
     </div>
-    <button class="delete-node">delete node</button>
+    <button class="delete-node">delete</button>
   </div>
 </template>
 

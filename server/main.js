@@ -1,15 +1,31 @@
 import { Meteor } from 'meteor/meteor';
 
 // code to run on server at startup
-Meteor.startup(() => {
-  // run a simulation every second if simulation is on
-  Meteor.setInterval(function() {
-    var state = SimulationState.findOne()
-    if(state.running) {
-      simulationStep()
-    }
-  }, 1000)
+Meteor.startup(() => {  
+  // initialize simulation state
+  var state = SimulationState.findOne()
+  if(state) {
+    SimulationState.update(state._id, {$set: {running: false}}) 
+  } else {
+    SimulationState.insert({
+      running: true,
+      speed: 1000
+    })
+  }
 })
+
+var simulationInterval = null
+
+// (re)start the simulation with specified speed
+startSimulation = function() {
+  simulationInterval = Meteor.setInterval(simulationStep, SimulationState.findOne().speed)  
+}
+
+// stop the simulation
+stopSimulation = function() {
+  Meteor.clearInterval(simulationInterval)
+  simulationInterval = null
+}
 
 // run a step in the simulation
 simulationStep = function() {
@@ -46,7 +62,7 @@ simulationStep = function() {
     if(node.level < 0) {
       node.level = 0 // make sure level doesn't drop below 0
     }
-    if(node.level > node.overflow) {
+    if(node.level > node.overflow && node.overflow > 0) {
       node.level = node.overflow
     }      
     Nodes.update(node._id, node)
@@ -60,14 +76,12 @@ Meteor.methods({
   // turn simulation on/off
   "simulation.toggle"() {
     var state = SimulationState.findOne()
-    if(!state) {
-      SimulationState.insert({
-        running: true
-      })
+    if(state.running) {
+      SimulationState.update(state._id, {$set: {running: false}})  
+      stopSimulation()
     } else {
-      SimulationState.update(state._id, {
-        running: !state.running
-      })
+      SimulationState.update(state._id, {$set: {running: true}})  
+      startSimulation()
     }
   },
   
@@ -77,29 +91,64 @@ Meteor.methods({
   },
   
   // create a new node
-  "nodes.create"() {
+  "nodes.create"(type) {
+    var title = type + " " + (Nodes.find({type: type}).count() + 1)
+    var level = 0
+    var decay = 0
+    var threshold = 0
+    var overflow = 0
+    
     // create the node    
     var newNodeId = Nodes.insert({
-      title: "node " + (Nodes.find().count() + 1),
+      title: title,
       description: "",
-      level: 50,
-      decay: 0,
-      threshold: 0,
-      overflow: 100
+      level: level,
+      decay: decay,
+      threshold: threshold,
+      overflow: overflow,
+      type: type
     })
-    // add connections from this node to all other nodes and to this node from all other nodes
+    
+    // add connections depending on type of created node
     Nodes.find().forEach(function(node) {
-      if(node._id != newNodeId) {
-        NodeConnections.insert({
-          source: newNodeId,
-          target: node._id,
-          bandwidth: 0
-        })
-        NodeConnections.insert({
-          source: node._id,
-          target: newNodeId,
-          bandwidth: 0
-        })  
+      if(node._id != newNodeId) { // no node connects to itself
+        // players connect to policies
+        if(type == "player") {
+          if(node.type == "policy") {
+            NodeConnections.insert({
+              source: newNodeId,
+              target: node._id,
+              bandwidth: 0
+            })            
+          }
+        }
+        if(type == "policy") {
+          // policies connect to other policies and goals and get connections from players and goals
+          if(node.type == "policy" || node.type == "goal") {
+            NodeConnections.insert({
+              source: newNodeId,
+              target: node._id,
+              bandwidth: 0
+            })            
+          }
+          if(node.type == "player" || node.type == "policy") {
+            NodeConnections.insert({
+              source: node._id,
+              target: newNodeId,
+              bandwidth: 0
+            })  
+          }
+        }
+        if(type == "goal") {
+          // goals only get connections from policies
+          if(node.type == "policy") {
+            NodeConnections.insert({
+              source: node._id,
+              target: newNodeId,
+              bandwidth: 0
+            })              
+          }
+        }
       }
     })    
   },
