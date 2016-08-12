@@ -18,13 +18,14 @@ h2 {
 }
 
 .node label {
-	width: 100px;
+	width: 160px;
 	display: inline-block;
 }
 
 .node input {
 	width: 100%;
 	box-sizing: border-box;
+	margin-bottom: 2px;
 }
 
 .node .data {
@@ -33,14 +34,19 @@ h2 {
 	margin-bottom: 10px;
 }
 
+.node .data-row {
+	overflow: auto;
+	margin-bottom: 2px;
+}
+
 .node .data input {
 	width: 50px;
-	height: 22px;
+	min-height: 22px;
 	float: right;
 }
 
 .node .data label {
-	height: 22px;
+	min-height: 22px;
 	float: left;
 }
 
