@@ -79,7 +79,7 @@ Template.node.helpers({
 Template.node.events({
   "input input"(event) {
     if(event.target.name == "replenish") {
-      this[decay] = -event.target.value // call negative decay "replenish" for player nodes
+      this["decay"] = -event.target.value // call negative decay "replenish" for player nodes
     } else {
       if($(event.target).hasClass("number")) {
         this[event.target.name] = Number(event.target.value) // convert input to number
