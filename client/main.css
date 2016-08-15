@@ -1,9 +1,5 @@
 /* CSS declarations go here */
 
-h2 {
-	margin-bottom: 0px;
-}
-
 .nodes {
 	overflow: auto;
 	margin-bottom: 10px;
@@ -57,4 +53,13 @@ h4 {
 .create-node {
 	display: block;
 	clear: both;
+}
+
+/* policy graph */
+
+#cy {
+	border: 1px solid #aaa;
+	margin: 10px;
+	width: 90%;
+	height: 500px;
 }

@@ -1,9 +1,15 @@
 <head>
   <title>Policy Garden</title>
+  <script src="/cytoscape/cytoscape.min.js"></script>
+  <script src="/cytoscape/cytoscape-cose-bilkent.js"></script>
+
 </head>
 
 <body>
   <h1>Policy Garden</h1>
+  
+  <section>
+  <h2>Simulation Control</h2>
   {{#if simulationRunning}}
     <button class="simulation-toggle">simulation stop</button>
   {{else}}
@@ -11,7 +17,10 @@
     <button class="simulation-toggle">simulation start</button>
     <button class="simulation-step">simulation step</button>
   {{/if}}
+  </section>
   
+  {{> policyGraph}}
+    
   <section class="goals">
     <h2>Goals</h2>
     <div class="nodes">
@@ -86,4 +95,10 @@
   <div class="data-row">
     <label>{{targetTitle}}</label><input name="bandwidth" value="{{bandwidth}}">
   </div>
+</template>
+
+<template name="policyGraph">
+  <h2>Graph Overview</h2>
+  <div id="cy"></div>
+  <button class="refresh-graph">refresh</button>
 </template>
