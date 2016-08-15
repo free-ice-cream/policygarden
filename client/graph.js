@@ -1,10 +1,3 @@
-Template.policyGraph.events({
-  "click .refresh-graph"(event) {
-    console.log("click refresh")
-    updatePolicyGraph()
-  }
-})
-  
 updatePolicyGraph = function() {
   
   var nodes = Nodes.find()
@@ -42,7 +35,7 @@ updatePolicyGraph = function() {
           'text-margin-y': "-5",
           'font-family': "times",
           'font-weight': "100",
-          'font-size': "18",
+          'font-size': "35",
           'content': 'data(title)'
         })
       .selector('edge')

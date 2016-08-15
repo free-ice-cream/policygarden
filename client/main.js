@@ -4,15 +4,11 @@ import { ReactiveVar } from 'meteor/reactive-var';
 import './main.html';
 
 Template.body.helpers({
-  goals() {
-    return Nodes.find({type: "goal"})
-  },
-  policies() {
-    return Nodes.find({type: "policy"})
-  },
-  players() {
-    return Nodes.find({type: "player"})
-  },
+  goalsSorted() { return Nodes.find({type: "goal"}, {sort: { level: -1 }}) },
+  policiesSorted() { return Nodes.find({type: "policy"}, {sort: { level: -1 }}) },
+  goals() { return Nodes.find({type: "goal"}) },
+  policies() { return Nodes.find({type: "policy"}) },
+  players() { return Nodes.find({type: "player"}) },
   simulationRunning() {
     var state = SimulationState.findOne()
     if(state) {
@@ -28,7 +24,8 @@ Template.body.helpers({
     } else {
       return false
     }
-  }
+  },
+  adminView() { return Session.get("adminView") }
 })
 
 Template.body.events({
@@ -52,6 +49,25 @@ Template.body.events({
   },
   "click .create-player"(event) {    
     Meteor.call("nodes.create", "player")
+  },
+  "click .toggle-admin-view"(event) {
+    if(Session.get("adminView")) {
+      Session.set("adminView", false)
+    } else {
+      Session.set("adminView", true)
+    }
+  },
+  "click .refresh-graph"(event) {
+    updatePolicyGraph()
+  }
+})
+
+Template.policyShort.helpers({
+  effective() {
+    return this.level >= this.threshold
+  },
+  overflow() {
+    return (this.level >= this.overflow) && (this.overflow > 0)
   }
 })
 
@@ -73,7 +89,9 @@ Template.node.helpers({
   },
   showConnections() {
     return NodeConnections.find({source: this._id}).count() > 0
-  }
+  },
+  adminView() { return Session.get("adminView") }
+  
 })
 
 Template.node.events({
@@ -107,6 +125,18 @@ Template.connection.events({
     this[event.target.name] = Number(event.target.value)
     NodeConnections.update(this._id, this)
   },
+  "click .plus-water"(event, template) {
+    this.bandwidth += 1
+    NodeConnections.update(this._id, this)
+  },
+  "click .minus-water"(event, template) {
+    if(this.bandwidth >= 1) {
+      this.bandwidth -= 1
+      NodeConnections.update(this._id, this)
+    }
+  }
+  
+
 })
   
   

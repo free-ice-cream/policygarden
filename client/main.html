@@ -6,10 +6,8 @@
 </head>
 
 <body>
-  <h1>Policy Garden</h1>
-  
   <section>
-  <h2>Simulation Control</h2>
+    <button class="refresh-graph">refresh garden map</button>
   {{#if simulationRunning}}
     <button class="simulation-toggle">simulation stop</button>
   {{else}}
@@ -17,12 +15,16 @@
     <button class="simulation-toggle">simulation start</button>
     <button class="simulation-step">simulation step</button>
   {{/if}}
+    <button class="toggle-admin-view">{{#if adminView}}switch to player view{{else}}switch to admin view{{/if}}</button>
   </section>
-  
-  {{> policyGraph}}
-    
+
+  <h1>Policy Garden</h1>
+  <div id="cy"></div>
+
+  {{#if adminView}}  
+
   <section class="goals">
-    <h2>Goals</h2>
+    <h2>Edit Goals</h2>
     <div class="nodes">
       {{#each goals}}
         {{> node}}
@@ -32,7 +34,7 @@
   </section>
 
   <section class="policies">
-    <h2>Policies</h2>
+    <h2>Edit Policies</h2>
     <div class="nodes">
       {{#each policies}}
         {{> node}}
@@ -41,28 +43,56 @@
     <button class="create-policy">create policy</button>
   </section>
 
+  {{else}}
+  
+  <section class="playerview">
+    <h2>Are We Reaching Our Goals?</h2>
+    <ol>
+      {{#each goalsSorted}}
+        <li>{{title}} ({{level}})</li>
+      {{/each}}
+    </ol>
+    <h2>Our Strongest Policies</h2>
+    <ol>
+      {{#each policiesSorted}}
+        {{> policyShort}}
+      {{/each}}
+    </ol>  
+  </section>
+  
+  {{/if}}
+
   <section class="players">
-    <h2>Players</h2>
+    <h2>Play</h2>
     <div class="nodes">
       {{#each players}}
         {{> node}}
       {{/each}}
     </div>
-    <button class="create-player">create player</button>
+    {{#if adminView}}
+      <button class="create-player">create player</button>
+    {{/if}}
   </section>
+  
 
 </body>
+
+<template name="policyShort">
+  <li>{{title}} ({{level}}) {{#unless effective}}warning: ineffective{{/unless}} {{#if overflow}}warning: overflow{{/if}}</li>
+</template>
 
 <template name="node">
   <div class="node">
     <input name="title" value="{{title}}" placeholder="add a title">
     <input name="description" value={{description}} placeholder="add a description">
     <div class="data">
+      {{#if adminView}}
       <div class="data-row">
         <label>overflow level</label><input name="overflow" class="number" value="{{overflow}}">
       </div>
+      {{/if}}
       <div class="data-row">
-        <label>current level</label><input name="level" class="number" value="{{level}}">
+        <label>water available</label><input name="level" class="number" value="{{level}}">
       </div>
         {{#if policy}}
         <div class="data-row">
@@ -70,9 +100,11 @@
         </div>
         {{/if}}
         {{#if player}}
-        <div class="data-row">
-          <label>replenishment</label><input name="replenish" class="number" value="{{replenish}}">
-        </div>
+          {{#if adminView}}
+          <div class="data-row">
+            <label>replenishment</label><input name="replenish" class="number" value="{{replenish}}">
+          </div>
+          {{/if}}
         {{else}}
         <div class="data-row">
           <label>leak</label><input name="decay" class="number" value="{{decay}}">
@@ -81,24 +113,21 @@
     </div>
     <div class="connections data">
       {{#if showConnections}}
-        <h4>water flows to</h4>
+        <h4>sending water to</h4>
       {{/if}}
       {{#each connections}}
         {{> connection}}
       {{/each}}
     </div>
-    <button class="delete-node">delete</button>
+    {{#if adminView}}
+      <button class="delete-node">delete</button>
+    {{/if}}
   </div>
 </template>
 
 <template name="connection">
   <div class="data-row">
-    <label>{{targetTitle}}</label><input name="bandwidth" value="{{bandwidth}}">
+    <label>{{targetTitle}}</label><button class="plus-water">+</button><input name="bandwidth" value="{{bandwidth}}"><button class="minus-water">-</button>
   </div>
 </template>
 
-<template name="policyGraph">
-  <h2>Garden Overview</h2>
-  <div id="cy"></div>
-  <button class="refresh-graph">refresh</button>
-</template>
