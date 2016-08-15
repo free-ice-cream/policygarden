@@ -9,9 +9,9 @@ updatePolicyGraph = function() {
   var cy = cytoscape({
     container: document.getElementById('cy'),
     zoomingEnabled: true,
-    userZoomingEnabled: false,
+    userZoomingEnabled: true,
     panningEnabled: true,
-    userPanningEnabled: false,
+    userPanningEnabled: true,
     elements: elements,
     layout: {
       name: 'cose-bilkent',
