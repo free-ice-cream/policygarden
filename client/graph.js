@@ -21,7 +21,7 @@ updatePolicyGraph = function() {
     userPanningEnabled: false,
     elements: elements,
     layout: {
-      name: 'grid',
+      name: 'cose-bilkent',
       fit: true
     },
     ready: function(){
@@ -52,7 +52,7 @@ updatePolicyGraph = function() {
             'target-arrow-shape': 'triangle',
             'line-color': 'data(color)',
             'source-arrow-color': '#000',
-            'target-arrow-color': 'data(color)'
+            'target-arrow-color': '#000'
         })
   })  
 
@@ -60,38 +60,31 @@ updatePolicyGraph = function() {
 
 graphElements = function(nodes, nodeConnections) {
   var elements = {nodes: [], edges: []}
-  var color = "#000"
-  nodes.sort(function(a, b) {
-    num = function(a) {
-      switch(a.type) {
-        case "player": return 2;
-        case "policy": return 1;
-        case "goal": return 0;
-      }
-    }
-    return num(a)-num(b)
-  })  
   nodes.forEach(function(node) {
-    elements.nodes.push({
-      data: {
-        id: node._id, 
-        title: node.title,
-        type: node.type,
-        color: color
-      }
-    })
+    if(node.type != "player") {
+      elements.nodes.push({
+        data: {
+          id: node._id, 
+          title: node.title,
+          type: node.type,
+          color: node.type == "goal" ? "blue" : "green"
+        }
+      })
+    }
   })  
   nodeConnections.forEach(function(connection) {
     if(connection.bandwidth > 0) {
       var source = Nodes.findOne(connection.source)
-      var target = Nodes.findOne(connection.target)
-      elements.edges.push({
-        data: {
-          source: source._id,
-          target: target._id,
-          color: color
-        }
-      }) 
+      if(source.type != "player") {
+        var target = Nodes.findOne(connection.target)
+        elements.edges.push({
+          data: {
+            source: source._id,
+            target: target._id,
+            color: "#000"
+          }
+        }) 
+      }
     } 
   })
   return elements
