@@ -8,7 +8,7 @@ Meteor.startup(() => {
     SimulationState.update(state._id, {$set: {running: false}}) 
   } else {
     SimulationState.insert({
-      running: true,
+      running: false,
       speed: 1000
     })
   }
@@ -85,7 +85,7 @@ Meteor.methods({
     }
   },
   
-  // do a manual simulation steop
+  // do a manual simulation step
   "simulation.step"() {
     simulationStep()
   },

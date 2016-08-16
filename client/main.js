@@ -97,7 +97,7 @@ Template.node.helpers({
 Template.node.events({
   "input input"(event) {
     if(event.target.name == "replenish") {
-      this["decay"] = -event.target.value // call negative decay "replenish" for player nodes
+      this["decay"] = -Number(event.target.value) // call negative decay "replenish" for player nodes
     } else {
       if($(event.target).hasClass("number")) {
         this[event.target.name] = Number(event.target.value) // convert input to number
@@ -117,7 +117,19 @@ Template.node.events({
 Template.connection.helpers({
   targetTitle() {
     return Nodes.findOne(this.target).title
-  }
+  },
+  addPossible() {
+    var maxBandwidth = - Nodes.findOne(this.source).decay
+    var totalBandwidth = 0
+    NodeConnections.find({source: this.source}).fetch().forEach(function(connection) {
+      totalBandwidth += connection.bandwidth
+    })
+    return totalBandwidth < maxBandwidth
+  },
+  subPossible() {
+    return this.bandwidth > 0 
+  },
+
 })
 
 Template.connection.events({

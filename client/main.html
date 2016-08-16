@@ -90,26 +90,24 @@
       <div class="data-row">
         <label>overflow level</label><input name="overflow" class="number" value="{{overflow}}">
       </div>
-      {{/if}}
       <div class="data-row">
         <label>water available</label><input name="level" class="number" value="{{level}}">
       </div>
-        {{#if policy}}
-        <div class="data-row">
-          <label>minimum level</label><input name="threshold" class="number" value="{{threshold}}">
-        </div>
-        {{/if}}
-        {{#if player}}
-          {{#if adminView}}
-          <div class="data-row">
-            <label>replenishment</label><input name="replenish" class="number" value="{{replenish}}">
-          </div>
-          {{/if}}
-        {{else}}
-        <div class="data-row">
-          <label>leak</label><input name="decay" class="number" value="{{decay}}">
-        </div>
-        {{/if}}
+      {{/if}}
+      {{#if policy}}
+      <div class="data-row">
+        <label>minimum level</label><input name="threshold" class="number" value="{{threshold}}">
+      </div>
+      {{/if}}
+      {{#if player}}
+      <div class="data-row">
+        <label>water flow</label><input name="replenish" class="number" value="{{replenish}}">
+      </div>
+      {{else}}
+      <div class="data-row">
+        <label>leak</label><input name="decay" class="number" value="{{decay}}">
+      </div>
+      {{/if}}
     </div>
     <div class="connections data">
       {{#if showConnections}}
@@ -127,7 +125,7 @@
 
 <template name="connection">
   <div class="data-row">
-    <label>{{targetTitle}}</label><button class="plus-water">+</button><input name="bandwidth" value="{{bandwidth}}"><button class="minus-water">-</button>
+    <label>{{targetTitle}}</label>{{#if addPossible}}<button class="plus-water">+</button>{{/if}}<input name="bandwidth" value="{{bandwidth}}">{{#if subPossible}}<button class="minus-water">-</button>{{/if}}
   </div>
 </template>
 
