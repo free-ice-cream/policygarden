@@ -145,8 +145,15 @@ Meteor.methods({
           }
         }
         if(type == "goal") {
-          // goals only get connections from policies
-          if(node.type == "policy") {
+          // goals connect to other goals and policies and get connections from policies and other goals
+          if(node.type == "policy" || node.type == "goal") {
+            NodeConnections.insert({
+              source: newNodeId,
+              target: node._id,
+              bandwidth: 0
+            })            
+          }
+          if(node.type == "policy" || node.type == "goal") {
             NodeConnections.insert({
               source: node._id,
               target: newNodeId,
