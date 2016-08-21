@@ -7,19 +7,30 @@
 
 <body>
   <section>
-    <button class="refresh-graph">refresh garden map</button>
+    <button class="toggle-admin-view">{{#if adminView}}switch to player view{{else}}switch to admin view{{/if}}</button>
   {{#if simulationRunning}}
     <button class="simulation-toggle">simulation stop</button>
   {{else}}
     <label>speed</label> <input class="simulation-speed" value="{{simulationSpeed}}">
     <button class="simulation-toggle">simulation start</button>
     <button class="simulation-step">simulation step</button>
+    <button class="take-snapshot">take new snapshot</button>
+    <select>
+        <option selected>load snapshot</option>
+        <option disabled>──────────</option>
+      {{#each snapshots}}
+        <option value="{{name}}">{{name}}</option>
+      {{/each}}
+    </select>
   {{/if}}
-    <button class="toggle-admin-view">{{#if adminView}}switch to player view{{else}}switch to admin view{{/if}}</button>
   </section>
 
   <h1>Policy Garden</h1>
-  <div id="cy"></div>
+
+  <div class="garden-map">
+    <div id="cy"></div>
+    <button class="refresh-graph">refresh garden map</button>
+  </div>
 
   {{#if adminView}}  
 
@@ -103,13 +114,13 @@
         </div>
       {{/if}}
       <div class="data-row">
-        <label>overflow</label><input name="overflow" class="number" value="{{overflow}}">
+        <label>max level</label><input name="overflow" class="number" value="{{overflow}}">
       </div>
       <div class="data-row">
         <label>min for outflow</label><input name="threshold" class="number" value="{{threshold}}">
       </div>
       <div class="data-row">
-        <label>max outflow</label><input name="maxOutflow" class="number" value="{{maxOutflow}}">
+        <label>max total outflow</label><input name="maxOutflow" class="number" value="{{maxOutflow}}">
       </div>
       {{/if}}
       <div class="data-row">

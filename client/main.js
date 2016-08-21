@@ -25,7 +25,8 @@ Template.body.helpers({
       return false
     }
   },
-  adminView() { return Session.get("adminView") }
+  adminView() { return Session.get("adminView") },
+  snapshots() { return Snapshots.find({}) }
 })
 
 Template.body.events({
@@ -59,6 +60,15 @@ Template.body.events({
   },
   "click .refresh-graph"(event) {
     updatePolicyGraph()
+  },
+  "click .take-snapshot"(event) {
+    var name = prompt("name you snapshot")
+    console.log(name)
+    if(name) {
+      Snapshots.insert({
+        name: name
+      })
+    }
   }
 })
 
