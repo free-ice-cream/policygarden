@@ -49,7 +49,7 @@
     <h2>Are We Reaching Our Goals?</h2>
     <ol>
       {{#each goalsSorted}}
-        <li>{{title}} ({{level}})</li>
+        <li>{{title}} (level: {{level}}, outflow: {{currentOutflow}})</li>
       {{/each}}
     </ol>
     <h2>Our Strongest Policies</h2>
@@ -63,7 +63,11 @@
   {{/if}}
 
   <section class="players">
-    <h2>Play</h2>
+    {{#if adminView}}
+      <h2>Edit Players</h2>
+    {{else}}
+      <h2>Play</h2>
+    {{/if}}
     <div class="nodes">
       {{#each players}}
         {{> node}}
@@ -74,11 +78,10 @@
     {{/if}}
   </section>
   
-
 </body>
 
 <template name="policyShort">
-  <li>{{title}} ({{level}}) {{#unless effective}}warning: ineffective{{/unless}} {{#if overflow}}warning: overflow{{/if}}</li>
+  <li>{{title}} (level: {{level}}, outflow: {{currentOutflow}}) {{#unless effective}}warning: ineffective{{/unless}} {{#if overflow}}warning: overflow{{/if}}</li>
 </template>
 
 <template name="node">
@@ -88,30 +91,34 @@
     <div class="data">
       {{#if adminView}}
       <div class="data-row">
-        <label>overflow level</label><input name="overflow" class="number" value="{{overflow}}">
+        <label>current level</label><input name="level" class="number" value="{{level}}">
       </div>
-      <div class="data-row">
-        <label>water available</label><input name="level" class="number" value="{{level}}">
-      </div>
-      {{/if}}
-      {{#if policy}}
-      <div class="data-row">
-        <label>minimum level</label><input name="threshold" class="number" value="{{threshold}}">
-      </div>
-      {{/if}}
       {{#if player}}
-      <div class="data-row">
-        <label>water flow</label><input name="replenish" class="number" value="{{replenish}}">
-      </div>
+        <div class="data-row">
+          <label>replenish</label><input name="replenish" class="number" value="{{replenish}}">
+        </div>
       {{else}}
+        <div class="data-row">
+          <label>leak</label><input name="decay" class="number" value="{{decay}}">
+        </div>
+      {{/if}}
       <div class="data-row">
-        <label>leak</label><input name="decay" class="number" value="{{decay}}">
+        <label>overflow</label><input name="overflow" class="number" value="{{overflow}}">
+      </div>
+      <div class="data-row">
+        <label>min for outflow</label><input name="threshold" class="number" value="{{threshold}}">
+      </div>
+      <div class="data-row">
+        <label>max outflow</label><input name="maxOutflow" class="number" value="{{maxOutflow}}">
       </div>
       {{/if}}
+      <div class="data-row">
+        <span>current outflow: {{currentOutflow}}</span>
+      </div>
     </div>
     <div class="connections data">
       {{#if showConnections}}
-        <h4>sending water to</h4>
+        <h4>outflow distribution (%)</h4>
       {{/if}}
       {{#each connections}}
         {{> connection}}

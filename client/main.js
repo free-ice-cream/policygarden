@@ -119,7 +119,7 @@ Template.connection.helpers({
     return Nodes.findOne(this.target).title
   },
   addPossible() {
-    var maxBandwidth = - Nodes.findOne(this.source).decay
+    var maxBandwidth = 100
     var totalBandwidth = 0
     NodeConnections.find({source: this.source}).fetch().forEach(function(connection) {
       totalBandwidth += connection.bandwidth

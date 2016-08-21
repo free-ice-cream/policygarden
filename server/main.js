@@ -30,43 +30,66 @@ stopSimulation = function() {
 // run a step in the simulation
 simulationStep = function() {
   
-  // calculate connections (this simply iterates over connections - todo: split available amount over existing connections)
-  NodeConnections.find().forEach(function(connection) {
-    if(connection.bandwidth > 0) {
-      var source = Nodes.findOne(connection.source)
-      var target = Nodes.findOne(connection.target)
-      
-      // determine amount to transfer
-      var maxAmount = source.level - source.threshold
-      if(maxAmount < 0) {
-        maxAmount = 0
-      }
-      var amount = connection.bandwidth
-      if(amount > maxAmount) {
-        amount = maxAmount
-      }
-      
-      //substract amount from source level
-      source.level -= amount
-      Nodes.update(source._id, source)
-
-      //add amount to target level
-      target.level += amount
-      Nodes.update(target._id, target)        
-    }
-  })
+  // 1st iteration over all nodes: decay & inflow
+  Nodes.find().fetch().forEach(function(node) {
   
-  // calculate decay and overflow
-  Nodes.find().forEach(function(node) {
+    // apply decay (replenishment)
     node.level -= node.decay
     if(node.level < 0) {
       node.level = 0 // make sure level doesn't drop below 0
     }
+
+    // apply inflow
+    node.level += node.inflow
+    node.inflow = 0
+    
+    // persist level and inflow
+    Nodes.update(node._id, {$set: {level: node.level, inflow: node.inflow}})
+
+  })
+  
+  // 2rd iteration over all nodes: overflow & outflow
+  Nodes.find().fetch().forEach(function(node) {
+    
+    // determine available outflow to transfer
+    var availableForOutflow = node.level - node.threshold
+    if(availableForOutflow < 0) {
+      availableForOutflow = 0
+    }
+    if(availableForOutflow > node.maxOutflow && node.maxOutflow > 0) {
+      availableForOutflow = node.maxOutflow
+    }
+    
+    // apply outflow
+    var currentOutflow = 0
+    if(availableForOutflow > 0) {
+      NodeConnections.find({source: node._id}).fetch().forEach(function(connection) {
+        if(connection.bandwidth > 0) {
+          var amount = (connection.bandwidth / 100.0) * availableForOutflow // calculate part of outflow for this conection
+          var target = Nodes.findOne(connection.target) 
+          if(!target.inflow) {
+            target.inflow = 0
+          }
+          target.inflow += amount // add amount to target inFlow                 
+          Nodes.update(target._id, {$set: {inflow: target.inflow}}) // persist inflow on target
+          
+          //substract outflow from source level
+          node.level -= amount
+          currentOutflow += amount          
+        }
+      })
+    }
+    
+    // apply overflow
     if(node.level > node.overflow && node.overflow > 0) {
       node.level = node.overflow
-    }      
-    Nodes.update(node._id, node)
+    }    
+    
+    // persist outflow and overflow
+    Nodes.update(node._id, {$set: {level: node.level, currentOutflow: currentOutflow}})
+  
   })
+  
   
 }
 
@@ -100,7 +123,6 @@ Meteor.methods({
     
     if(type == "player") {
       decay = -1
-      overflow = 10
     }
     
     // create the node    
@@ -111,7 +133,10 @@ Meteor.methods({
       decay: decay,
       threshold: threshold,
       overflow: overflow,
-      type: type
+      inflow: 0,
+      type: type,
+      maxOutflow: 0,
+      currentOutflow: 0
     })
     
     // add connections depending on type of created node
