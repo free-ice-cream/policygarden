@@ -31,7 +31,7 @@ stopSimulation = function() {
 simulationStep = function() {
   
   // 1st iteration over all nodes: decay & inflow
-  Nodes.find().fetch().forEach(function(node) {
+  Nodes.find({state: "active"}).fetch().forEach(function(node) {
   
     // apply decay (replenishment)
     node.level -= node.decay
@@ -49,7 +49,7 @@ simulationStep = function() {
   })
   
   // 2rd iteration over all nodes: overflow & outflow
-  Nodes.find().fetch().forEach(function(node) {
+  Nodes.find({state: "active"}).fetch().forEach(function(node) {
     
     // determine available outflow to transfer
     var availableForOutflow = node.level - node.threshold
@@ -136,11 +136,12 @@ Meteor.methods({
       inflow: 0,
       type: type,
       maxOutflow: 0,
-      currentOutflow: 0
+      currentOutflow: 0,
+      state: "active"
     })
     
     // add connections depending on type of created node
-    Nodes.find().forEach(function(node) {
+    Nodes.find({state: "active"}).forEach(function(node) {
       if(node._id != newNodeId) { // no node connects to itself
         // players connect to policies
         if(type == "player") {
@@ -148,7 +149,8 @@ Meteor.methods({
             NodeConnections.insert({
               source: newNodeId,
               target: node._id,
-              bandwidth: 0
+              bandwidth: 0,
+              state: "active"
             })            
           }
         }
@@ -158,14 +160,16 @@ Meteor.methods({
             NodeConnections.insert({
               source: newNodeId,
               target: node._id,
-              bandwidth: 0
+              bandwidth: 0,
+              state: "active"
             })            
           }
           if(node.type == "player" || node.type == "policy") {
             NodeConnections.insert({
               source: node._id,
               target: newNodeId,
-              bandwidth: 0
+              bandwidth: 0,
+              state: "active"
             })  
           }
         }
@@ -175,14 +179,16 @@ Meteor.methods({
             NodeConnections.insert({
               source: newNodeId,
               target: node._id,
-              bandwidth: 0
+              bandwidth: 0,
+              state: "active"
             })            
           }
           if(node.type == "policy" || node.type == "goal") {
             NodeConnections.insert({
               source: node._id,
               target: newNodeId,
-              bandwidth: 0
+              bandwidth: 0,
+              state: "active"
             })              
           }
         }
@@ -195,5 +201,74 @@ Meteor.methods({
     Nodes.remove(id)
     NodeConnections.remove({source:id})
     NodeConnections.remove({target:id})
+  },
+  
+  // creates a new snapshot
+  "snapshots.create"(name) {
+    Snapshots.insert({
+      name: name
+    })
+    // make a copy of all currently active nodes & connections with snapshot name    
+    
+    // iterate over nodes -> save translation object for new ids
+    var newId = {}
+    var connections = []
+    
+    Nodes.find({state: "active"}).fetch().forEach(function(node) {
+      var oldId = node._id
+      delete node._id
+      node.state = "snapshot"
+      node.snapshot = name
+      newId[oldId] = Nodes.insert(node)
+      connections.push.apply(connections, NodeConnections.find({source: oldId}).fetch())
+    })
+    
+    connections.forEach(function(connection) {
+      delete connection._id
+      connection.source = newId[connection.source]
+      connection.target = newId[connection.target]
+      connection.state = "snapshot"
+      connection.snapshot = name
+      NodeConnections.insert(connection)        
+    })
+    
+  },
+  
+  // loads a snapshot
+  "snapshots.load"(name) {
+    
+    // delete all active nodes and their connections
+    Nodes.find({state: "active"}).fetch().forEach(function(node) {
+      NodeConnections.remove({source: node._id})
+      Nodes.remove(node._id)
+    })
+
+    // load snapshot 
+    var newId = {}
+    var connections = []
+    Nodes.find({snapshot: name}).forEach(function(node) {
+      var oldId = node._id
+      delete node._id
+      node.state = "active"
+      node.snapshot = undefined
+      newId[oldId] = Nodes.insert(node)
+      connections.push.apply(connections, NodeConnections.find({source: oldId}).fetch())
+    })
+    
+    connections.forEach(function(connection) {
+      delete connection._id
+      connection.source = newId[connection.source]
+      connection.target = newId[connection.target]
+      connection.state = "active"
+      NodeConnections.insert(connection)        
+    })
+    
+  },
+  
+  "snapshots.delete"(name) {
+    Nodes.remove({snapshot: name})
+    NodeConnections.remove({snapshot: name})
+    Snapshots.remove({name: name})
   }
+
 })

@@ -1,7 +1,7 @@
 updatePolicyGraph = function() {
   
-  var nodes = Nodes.find()
-  var nodeConnections = NodeConnections.find()
+  var nodes = Nodes.find({state: "active"})
+  var nodeConnections = NodeConnections.find({state: "active"})
   var elements = graphElements(nodes.fetch(), nodeConnections.fetch())
   console.log(elements)
   

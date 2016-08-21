@@ -4,11 +4,11 @@ import { ReactiveVar } from 'meteor/reactive-var';
 import './main.html';
 
 Template.body.helpers({
-  goalsSorted() { return Nodes.find({type: "goal"}, {sort: { level: -1 }}) },
-  policiesSorted() { return Nodes.find({type: "policy"}, {sort: { level: -1 }}) },
-  goals() { return Nodes.find({type: "goal"}) },
-  policies() { return Nodes.find({type: "policy"}) },
-  players() { return Nodes.find({type: "player"}) },
+  goalsSorted() { return Nodes.find({state: "active", type: "goal"}, {sort: { level: -1 }}) },
+  policiesSorted() { return Nodes.find({state: "active", type: "policy"}, {sort: { level: -1 }}) },
+  goals() { return Nodes.find({state: "active", type: "goal"}) },
+  policies() { return Nodes.find({state: "active", type: "policy"}) },
+  players() { return Nodes.find({state: "active", type: "player"}) },
   simulationRunning() {
     var state = SimulationState.findOne()
     if(state) {
@@ -26,7 +26,10 @@ Template.body.helpers({
     }
   },
   adminView() { return Session.get("adminView") },
-  snapshots() { return Snapshots.find({}) }
+  snapshots() { return Snapshots.find({}) },
+  optionSelected() { return this.name == Session.get("snapshotSelected") ? "selected" : "" },
+  snapshotSelected() { return Session.get("snapshotSelected") }
+      
 })
 
 Template.body.events({
@@ -43,13 +46,13 @@ Template.body.events({
     } 
   },
   "click .create-goal"(event) {    
-    Meteor.call("nodes.create", "goal")
+    Meteor.call("nodes.create", "goal", updatePolicyGraph)
   },
   "click .create-policy"(event) {    
-    Meteor.call("nodes.create", "policy")
+    Meteor.call("nodes.create", "policy", updatePolicyGraph)
   },
   "click .create-player"(event) {    
-    Meteor.call("nodes.create", "player")
+    Meteor.call("nodes.create", "player", updatePolicyGraph)
   },
   "click .toggle-admin-view"(event) {
     if(Session.get("adminView")) {
@@ -63,14 +66,36 @@ Template.body.events({
   },
   "click .take-snapshot"(event) {
     var name = prompt("name you snapshot")
-    console.log(name)
     if(name) {
-      Snapshots.insert({
-        name: name
+      Meteor.call("snapshots.create", name, function() {
+        Session.set("snapshotSelected", name)
+      })
+    }
+  },
+  "change .load-snapshot"(event, template) {
+    if(event.target.value != "load") {
+      if(confirm("caution: when reverting to a snapshot you lose the current simulation state. proceed?")) {
+        Meteor.call("snapshots.load", event.target.value, function() {
+          updatePolicyGraph()
+          Session.set("snapshotSelected", event.target.value == "empty" ? null : event.target.value)
+        })
+      } 
+    }
+  },
+  "click .delete-snapshot"(event) {
+    if(confirm("delete snapshot " + Session.get("snapshotSelected") + "?")) {
+      Meteor.call("snapshots.delete", Session.get("snapshotSelected"), function() {
+        Session.set("snapshotSelected", null)
       })
     }
   }
 })
+
+Template.body.rendered = function() {
+  Meteor.setTimeout(function() {
+    updatePolicyGraph()    
+  }, 2000)
+}
 
 Template.policyShort.helpers({
   effective() {
@@ -119,14 +144,17 @@ Template.node.events({
   },
   "click .delete-node"(event) {
     if(confirm("permanently delete node?")) {
-      Meteor.call("nodes.delete", this._id)
+      Meteor.call("nodes.delete", this._id, updatePolicyGraph)
     }
   }
 })
 
 Template.connection.helpers({
   targetTitle() {
-    return Nodes.findOne(this.target).title
+    var node = Nodes.findOne(this.target)
+    if(node) {
+      return Nodes.findOne(this.target).title
+    }
   },
   addPossible() {
     var maxBandwidth = 100
@@ -144,17 +172,30 @@ Template.connection.helpers({
 
 Template.connection.events({
   "input input"(event) {
-    this[event.target.name] = Number(event.target.value)
+    var newValue = Number(event.target.value)
+    var oldValue = this[event.target.name]
+    this[event.target.name] = newValue
     NodeConnections.update(this._id, this)
+    if(event.target.name == "bandwidth") {
+      if(oldValue == 0 || newValue == 0) {
+        updatePolicyGraph()
+      }
+    }
   },
   "click .plus-water"(event, template) {
     this.bandwidth += 1
     NodeConnections.update(this._id, this)
+    if(this.bandwidth == 1) {
+      updatePolicyGraph()
+    }
   },
   "click .minus-water"(event, template) {
     if(this.bandwidth >= 1) {
       this.bandwidth -= 1
       NodeConnections.update(this._id, this)
+      if(this.bandwidth == 0) {
+        updatePolicyGraph()
+      }
     }
   }
   

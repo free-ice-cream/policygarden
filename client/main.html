@@ -14,14 +14,16 @@
     <label>speed</label> <input class="simulation-speed" value="{{simulationSpeed}}">
     <button class="simulation-toggle">simulation start</button>
     <button class="simulation-step">simulation step</button>
-    <button class="take-snapshot">take new snapshot</button>
-    <select>
-        <option selected>load snapshot</option>
+    <button class="take-snapshot">create snapshot</button>
+    <select class="load-snapshot">
+        <option value="load">load snapshot</option>
         <option disabled>──────────</option>
+        <option value="empty">empty</option>
       {{#each snapshots}}
-        <option value="{{name}}">{{name}}</option>
+        <option {{optionSelected}} value="{{name}}">{{name}}</option>
       {{/each}}
     </select>
+    {{#if snapshotSelected}}<button class="delete-snapshot">delete snapshot</button>{{/if}}
   {{/if}}
   </section>
 
