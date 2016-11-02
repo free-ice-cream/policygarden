@@ -88,6 +88,9 @@ Template.body.events({
         Session.set("snapshotSelected", null)
       })
     }
+  },
+  "click .export-json"(event) {
+    alert(exportJson())
   }
 })
 
