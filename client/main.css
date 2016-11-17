@@ -66,6 +66,11 @@ h4 {
 	clear: both;
 }
 
+#jsonOutput {
+	margin-top: 40px;
+	width: 50%;
+}
+
 /* policy graph */
 
 .garden-map {

@@ -90,7 +90,7 @@ Template.body.events({
     }
   },
   "click .export-json"(event) {
-    alert(exportJson())
+    $("#jsonOutput").html("<h2>JSON</h2><p>" + exportJson() + "</p>")
   }
 })
 
