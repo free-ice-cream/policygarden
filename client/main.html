@@ -93,6 +93,7 @@
   </section>
   
     <div id="jsonOutput"></div>
+    <div id="jsonImport"><textarea class="json-import-data"></textarea><br><button class="json-import">import JSON</button></div>
   
 </body>
 
@@ -102,12 +103,12 @@
 
 <template name="node">
   <div class="node">
-    <input name="title" value="{{title}}" placeholder="add a title">
-    <input name="description" value={{description}} placeholder="add a description">
+    <input name="title" value="{{title}}" placeholder="add a name">
+    <input name="description" value={{description}} placeholder="add the short name">
     <div class="data">
       {{#if adminView}}
       <div class="data-row">
-        <label>current level</label><input name="level" class="number" value="{{level}}">
+        <label>balance</label><input name="level" class="number" value="{{level}}">
       </div>
       {{#if player}}
         <div class="data-row">
@@ -115,18 +116,18 @@
         </div>
       {{else}}
         <div class="data-row">
-          <label>leak</label><input name="decay" class="number" value="{{decay}}">
+          <label>leakage</label><input name="decay" class="number" value="{{decay}}">
         </div>
       {{/if}}
       <div class="data-row">
-        <label>max level</label><input name="overflow" class="number" value="{{overflow}}">
+        <label>max amount</label><input name="overflow" class="number" value="{{overflow}}">
       </div>
       <div class="data-row">
-        <label>min for outflow</label><input name="threshold" class="number" value="{{threshold}}">
+        <label>activation amount</label><input name="threshold" class="number" value="{{threshold}}">
       </div>
-      <div class="data-row">
+      <!--div class="data-row">
         <label>max total outflow</label><input name="maxOutflow" class="number" value="{{maxOutflow}}">
-      </div>
+      </div-->
       {{/if}}
       <div class="data-row">
         <span>current outflow: {{currentOutflow}}</span>

@@ -36,7 +36,7 @@ updatePolicyGraph = function() {
           'font-family': "times",
           'font-weight': "100",
           'font-size': "35",
-          'content': 'data(title)'
+          'content': 'data(short_title)'
         })
       .selector('edge')
         .css({
@@ -59,6 +59,7 @@ graphElements = function(nodes, nodeConnections) {
         data: {
           id: node._id, 
           title: node.title,
+          short_title: node.description ? node.description : node.title,
           type: node.type,
           color: node.type == "goal" ? "blue" : "green"
         }

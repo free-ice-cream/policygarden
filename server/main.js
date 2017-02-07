@@ -125,8 +125,11 @@ Meteor.methods({
       decay = -1
     }
     
+    var uuid = generateUuid()
+
     // create the node    
     var newNodeId = Nodes.insert({
+      _id: uuid,
       title: title,
       description: "",
       level: level,
@@ -147,6 +150,7 @@ Meteor.methods({
         if(type == "player") {
           if(node.type == "policy") {
             NodeConnections.insert({
+              _id: generateUuid(),
               source: newNodeId,
               target: node._id,
               bandwidth: 0,
@@ -158,6 +162,7 @@ Meteor.methods({
           // policies connect to other policies and goals and get connections from players and goals
           if(node.type == "policy" || node.type == "goal") {
             NodeConnections.insert({
+              _id: generateUuid(),
               source: newNodeId,
               target: node._id,
               bandwidth: 0,
@@ -166,6 +171,7 @@ Meteor.methods({
           }
           if(node.type == "player" || node.type == "policy") {
             NodeConnections.insert({
+              _id: generateUuid(),
               source: node._id,
               target: newNodeId,
               bandwidth: 0,
@@ -177,6 +183,7 @@ Meteor.methods({
           // goals connect to other goals and policies and get connections from policies and other goals
           if(node.type == "policy" || node.type == "goal") {
             NodeConnections.insert({
+              _id: generateUuid(),
               source: newNodeId,
               target: node._id,
               bandwidth: 0,
@@ -185,6 +192,7 @@ Meteor.methods({
           }
           if(node.type == "policy" || node.type == "goal") {
             NodeConnections.insert({
+              _id: generateUuid(),
               source: node._id,
               target: newNodeId,
               bandwidth: 0,
@@ -234,6 +242,55 @@ Meteor.methods({
     
   },
   
+  // imports a json
+  "json.import"(jsonObject) {
+    
+    // delete all active nodes and their connections
+    Nodes.find({state: "active"}).fetch().forEach(function(node) {
+      NodeConnections.remove({source: node._id})
+      Nodes.remove(node._id)
+    })
+
+    createNodeFromJson = function(jsonNode, type) {
+      
+      // create the node    
+      var newNodeId = Nodes.insert({
+        _id: jsonNode.id,
+        title: jsonNode.name,
+        description: jsonNode.short_name,
+        level: jsonNode.balance,
+        decay: jsonNode.leakage,
+        threshold: jsonNode.activation_amount,
+        overflow: jsonNode.max_amount,
+        inflow: 0,
+        type: type,
+        maxOutflow: 0,
+        currentOutflow: 0,
+        state: "active"
+      })
+
+      jsonNode.connections.forEach(function(jsonConnection) {
+        NodeConnections.insert({
+          _id: jsonConnection.id,
+          source: jsonConnection.from_id,
+          target: jsonConnection.to_id,
+          bandwidth: jsonConnection.weight,
+          state: "active"
+        })  
+      })
+    }
+
+    jsonObject.goals.forEach(function(jsonNode) {
+      createNodeFromJson(jsonNode, "goal")
+    })
+
+    jsonObject.policies.forEach(function(jsonNode) {
+      createNodeFromJson(jsonNode, "policy")
+    })
+
+  },
+
+
   // loads a snapshot
   "snapshots.load"(name) {
     
@@ -272,3 +329,18 @@ Meteor.methods({
   }
 
 })
+
+
+
+generateUuid = function() {
+  var uuid = "", i, random;
+  for (i = 0; i < 32; i++) {
+    random = Math.random() * 16 | 0;
+
+    if (i == 8 || i == 12 || i == 16 || i == 20) {
+      uuid += "-"
+    }
+    uuid += (i == 12 ? 4 : (i == 16 ? (random & 3 | 8) : random)).toString(16);
+  }
+  return uuid;
+}

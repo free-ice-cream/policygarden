@@ -3,6 +3,24 @@ import { ReactiveVar } from 'meteor/reactive-var';
 
 import './main.html';
 
+importJson = function(raw) {
+  var jsonObject;
+  var err;
+
+  try {
+    jsonObject = $.parseJSON(raw) 
+    console.log(jsonObject)
+  } catch(err) {
+    if(err) {
+      console.log(err.message)
+      return false
+    }
+  } 
+
+  Meteor.call("json.import", jsonObject)
+  return true
+}
+
 Template.body.helpers({
   goalsSorted() { return Nodes.find({state: "active", type: "goal"}, {sort: { level: -1 }}) },
   policiesSorted() { return Nodes.find({state: "active", type: "policy"}, {sort: { level: -1 }}) },
@@ -91,6 +109,15 @@ Template.body.events({
   },
   "click .export-json"(event) {
     $("#jsonOutput").html("<h2>JSON</h2><p>" + exportJson() + "</p>")
+  },
+  "click .json-import"(event) {
+    if(confirm("import json data and replace current graph?")) {
+      if(importJson($(".json-import-data").val())) {
+        alert("sucess")
+      } else {
+        alert("import error")
+      }
+    }
   }
 })
 
@@ -133,7 +160,7 @@ Template.node.helpers({
 })
 
 Template.node.events({
-  "input input"(event) {
+  "change input"(event) {
     if(event.target.name == "replenish") {
       this["decay"] = -Number(event.target.value) // call negative decay "replenish" for player nodes
     } else {
@@ -174,7 +201,7 @@ Template.connection.helpers({
 })
 
 Template.connection.events({
-  "input input"(event) {
+  "change input"(event) {
     var newValue = Number(event.target.value)
     var oldValue = this[event.target.name]
     this[event.target.name] = newValue
