@@ -39,20 +39,33 @@
 
   <section class="goals">
     <h2>Edit Goals</h2>
-    <div class="nodes">
+
+    <select class="load-goal">
+      <option value="select">select to edit</option>
       {{#each goals}}
-        {{> node}}
+        <option {{goalSelected}} value="{{_id}}">{{title}}</option>
       {{/each}}
+    </select>
+    <div class="nodes">
+      {{#if selectedGoal}}
+        {{>node selectedGoal}}
+      {{/if}}
     </div>
     <button class="create-goal">create goal</button>
   </section>
 
   <section class="policies">
     <h2>Edit Policies</h2>
-    <div class="nodes">
+    <select class="load-policy">
+      <option value="select">select to edit</option>
       {{#each policies}}
-        {{> node}}
+        <option {{policySelected}} value="{{_id}}">{{title}}</option>
       {{/each}}
+    </select>
+    <div class="nodes">
+      {{#if selectedPolicy}}
+        {{>node selectedPolicy}}
+      {{/if}}
     </div>
     <button class="create-policy">create policy</button>
   </section>

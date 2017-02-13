@@ -3,29 +3,15 @@ import { ReactiveVar } from 'meteor/reactive-var';
 
 import './main.html';
 
-importJson = function(raw) {
-  var jsonObject;
-  var err;
-
-  try {
-    jsonObject = $.parseJSON(raw) 
-    console.log(jsonObject)
-  } catch(err) {
-    if(err) {
-      console.log(err.message)
-      return false
-    }
-  } 
-
-  Meteor.call("json.import", jsonObject)
-  return true
-}
-
 Template.body.helpers({
   goalsSorted() { return Nodes.find({state: "active", type: "goal"}, {sort: { level: -1 }}) },
   policiesSorted() { return Nodes.find({state: "active", type: "policy"}, {sort: { level: -1 }}) },
   goals() { return Nodes.find({state: "active", type: "goal"}) },
+  goalSelected() { return this._id == Session.get("goalSelected") ? "selected" : "" },
+  selectedGoal() { return Nodes.findOne(Session.get("goalSelected")) },
   policies() { return Nodes.find({state: "active", type: "policy"}) },
+  policySelected() { return this._id == Session.get("policySelected") ? "selected" : "" },
+  selectedPolicy() { return Nodes.findOne(Session.get("policySelected")) },
   players() { return Nodes.find({state: "active", type: "player"}) },
   simulationRunning() {
     var state = SimulationState.findOne()
@@ -63,11 +49,27 @@ Template.body.events({
       SimulationState.update(state._id, {$set: {speed:Number(event.target.value)}})
     } 
   },
+  "change .load-goal"(event, template) {
+    if(event.target.value != "load") {
+      Session.set("goalSelected", event.target.value)
+    }
+  },
+  "change .load-policy"(event, template) {
+    if(event.target.value != "load") {
+      Session.set("policySelected", event.target.value)
+    }
+  },
   "click .create-goal"(event) {    
-    Meteor.call("nodes.create", "goal", updatePolicyGraph)
+    var id = Meteor.call("nodes.create", "goal", function(error, result) {
+      Session.set("goalSelected", result)  
+      updatePolicyGraph()
+    })
   },
   "click .create-policy"(event) {    
-    Meteor.call("nodes.create", "policy", updatePolicyGraph)
+    var id = Meteor.call("nodes.create", "policy", function(error, result) {
+      Session.set("policySelected", result)
+      updatePolicyGraph      
+    })
   },
   "click .create-player"(event) {    
     Meteor.call("nodes.create", "player", updatePolicyGraph)
@@ -183,7 +185,8 @@ Template.connection.helpers({
   targetTitle() {
     var node = Nodes.findOne(this.target)
     if(node) {
-      return Nodes.findOne(this.target).title
+      let target = Nodes.findOne(this.target)
+      return (target.description ? target.description : target.title.substr(0, 20))
     }
   },
   addPossible() {

@@ -59,7 +59,7 @@ graphElements = function(nodes, nodeConnections) {
         data: {
           id: node._id, 
           title: node.title,
-          short_title: node.description ? node.description : node.title,
+          short_title: node.description ? node.description : node.title.substr(0, 20),
           type: node.type,
           color: node.type == "goal" ? "blue" : "green"
         }

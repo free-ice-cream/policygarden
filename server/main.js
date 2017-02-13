@@ -201,7 +201,9 @@ Meteor.methods({
           }
         }
       }
-    })    
+    }) 
+
+    return uuid;  
   },
   
   // delete a node
@@ -278,6 +280,7 @@ Meteor.methods({
           state: "active"
         })  
       })
+
     }
 
     jsonObject.goals.forEach(function(jsonNode) {
@@ -286,6 +289,24 @@ Meteor.methods({
 
     jsonObject.policies.forEach(function(jsonNode) {
       createNodeFromJson(jsonNode, "policy")
+    })
+
+    Nodes.find({state: "active", type: {$ne: "player"}}).fetch().forEach(function(node) {
+      Nodes.find({state: "active", type: {$ne: "player"}}).fetch().forEach(function(targetNode) {
+        if(targetNode._id == node._id) {
+          return
+        }
+        var connection = NodeConnections.find({source: node._id, target: targetNode._id}).fetch()
+        if(connection.length == 0) {
+          NodeConnections.insert({
+            _id: generateUuid(),
+            source: node._id,
+            target: targetNode._id,
+            bandwidth: 0,
+            state: "active"
+          })  
+        }
+      })
     })
 
   },
