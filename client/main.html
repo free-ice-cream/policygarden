@@ -35,7 +35,7 @@
     <button class="refresh-graph">refresh garden map</button>
   </div>
 
-  {{#if adminView}}  
+  {{#if adminView}}
 
   <section class="goals">
     <h2>Edit Goals</h2>
@@ -71,7 +71,7 @@
   </section>
 
   {{else}}
-  
+
   <section class="playerview">
     <h2>Are We Reaching Our Goals?</h2>
     <ol>
@@ -84,9 +84,9 @@
       {{#each policiesSorted}}
         {{> policyShort}}
       {{/each}}
-    </ol>  
+    </ol>
   </section>
-  
+
   {{/if}}
 
   <section class="players">
@@ -104,25 +104,25 @@
       <button class="create-player">create player</button>
     {{/if}}
   </section>
-  
+
     <div id="jsonOutput"></div>
     <div id="jsonImport"><textarea class="json-import-data"></textarea><br><button class="json-import">import JSON</button></div>
-  
+
 </body>
 
 <template name="policyShort">
   <li>{{title}} (level: {{level}}, outflow: {{currentOutflow}}) {{#unless effective}}warning: ineffective{{/unless}} {{#if overflow}}warning: overflow{{/if}}</li>
 </template>
-
+<!-- the node template is used to set up the form elements that go on to be the json  -->
 <template name="node">
   <div class="node">
     <input name="title" value="{{title}}" placeholder="add a name">
     <input name="description" value={{description}} placeholder="add the short name">
     <div class="data">
       {{#if adminView}}
-      <div class="data-row">
+      <!-- <div class="data-row">
         <label>balance</label><input name="level" class="number" value="{{level}}">
-      </div>
+      </div> -->
       {{#if player}}
         <div class="data-row">
           <label>replenish</label><input name="replenish" class="number" value="{{replenish}}">
@@ -136,8 +136,14 @@
         <label>max amount</label><input name="overflow" class="number" value="{{overflow}}">
       </div>
       <div class="data-row">
-        <label>activation amount</label><input name="threshold" class="number" value="{{threshold}}">
+        <label>success threshold</label><input name="threshold" class="number" value="{{threshold}}">
       </div>
+      <div class="data-row">
+        <label>group</label><input name="group" class="number" value="{{group}}">
+      </div>
+      <!-- <div class="data-row">
+        <label>popularity threshold</label><input name="pop" class="number" value="{{pop}}">
+      </div> -->
       <!--div class="data-row">
         <label>max total outflow</label><input name="maxOutflow" class="number" value="{{maxOutflow}}">
       </div-->
@@ -165,4 +171,3 @@
     <label>{{targetTitle}}</label><input name="bandwidth" value="{{bandwidth}}">
   </div>
 </template>
-
